@@ -107,6 +107,45 @@ app.get('/api/v1/index_goods', (req, res) => {
     })
 })
 
+// 商品接口
+app.get('/api/v1/goods', (req, res) => {
+
+    // 接收 id
+    let id = req.query.id   // 1,2,3,4,5,6,8,88
+
+    /********** 拼出 ? 
+     * （SQL 的预处理功能：1. 加快 SQL 执行的效率 2. 更加安全，可以防止 SQL 注入 
+     * */
+    // 先把 id 转成数组
+    id = id.split(',')  // [1,2,3,4,5,6,8,88]
+    // 循环数组获取 ?
+    let wenhao = []  // 保存 ?
+    id.forEach(v=>{
+        wenhao.push('?')   // [?,?,?,?,?,?,?,?]
+    })
+    // 把问号的数组转成字符串
+    wenhao = wenhao.join(',')   // ?,?,?,?,?,?,?,?
+
+    let sql = `SELECT * FROM shop_goods WHERE id IN(${wenhao})`
+    // console.log(sql)
+    // 执行时把?对应的参数加上
+    db.query(sql, id, (err, data)=>{
+        if(err) {
+            // 给前端返回 JSON 数据
+            res.json({
+                'ok': 0,
+                'error': err
+            })
+        } else {
+            // 给前端返回 JSON 数据
+            res.json({
+                'ok': 1,
+                'data': data
+            })
+        }
+    })
+})
+
 // 启动服务器
 app.listen(9999, ()=>{
     console.log('成功！监听：127.0.0.1:9999!')
